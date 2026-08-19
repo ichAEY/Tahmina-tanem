@@ -112,6 +112,12 @@ replaceBetween(
 );
 
 replaceRequired(
+  '              onMouseLeave={resumeDesktopGallery}',
+  '              onMouseLeave={() => { if (desktopGalleryPointerStartRef.current === null) resumeDesktopGallery(); }}',
+  "desktop gallery mouse leave",
+);
+
+replaceRequired(
 `              onPointerDown={(event) => {
                 if (!event.isPrimary) return;
                 pauseDesktopGallery(event.clientX);

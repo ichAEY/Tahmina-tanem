@@ -1,0 +1,104 @@
+name: Deploy Tahmina TANEM site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout customer repository
+        uses: actions/checkout@v4
+        with:
+          path: customer
+
+      - name: Checkout pinned Nonna template
+        uses: actions/checkout@v4
+        with:
+          repository: ichAEY/claytone-current
+          ref: ce1bd42b44e76e1851af9e069c4cbcf06fc8eac2
+          path: template
+
+      - name: Apply Tahmina content and photos
+        run: |
+          cp customer/site-data.mjs template/site-data.mjs
+          mkdir -p template/public/assets/tahmina
+          cp customer/tahmina/assets/images/hero.jpg template/public/assets/tahmina/hero.jpg
+          cp customer/tahmina/assets/images/master.jpg template/public/assets/tahmina/master.jpg
+          cp customer/tahmina/assets/images/logo.jpg template/public/assets/tahmina/logo.jpg
+          mkdir -p template/public/assets/tahmina/portfolio
+          cp customer/tahmina/assets/images/portfolio/*.jpg template/public/assets/tahmina/portfolio/
+          printf '%s\n' '// Booking on this site opens the external Masters booking page.' > template/public/noop.js
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: template/package-lock.json
+
+      - name: Install dependencies
+        working-directory: template
+        run: npm ci
+
+      - name: Apply TANEM master data
+        working-directory: template
+        run: node scripts/generate-site.mjs
+
+      - name: Remove old exported Next assets
+        working-directory: template
+        run: rm -rf public/_next
+
+      - name: Ignore hosting-only TypeScript files for Pages build
+        working-directory: template
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'tsconfig.json';
+          const config = JSON.parse(fs.readFileSync(path, 'utf8'));
+          config.exclude = [
+            ...(config.exclude || []),
+            'db/**',
+            'worker/**',
+            'examples/**',
+            'build/**',
+            'drizzle/**',
+            'drizzle.config.ts',
+            'vite.config.ts'
+          ];
+          fs.writeFileSync(path, JSON.stringify(config, null, 2) + '\n');
+          NODE
+
+      - name: Build exact Nonna template with Tahmina data
+        working-directory: template
+        run: npx next build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: template/out
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

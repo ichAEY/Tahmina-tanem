@@ -51,13 +51,13 @@ replaceRequired(
             <button className={\`mct-tab\${category === "manicure" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "manicure"} onClick={() => switchCategory("manicure")}>Маникюр</button>
             <button className={\`mct-tab\${category === "pedicure" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "pedicure"} onClick={() => switchCategory("pedicure")}>Педикюр</button>
           </div>`,
-`          <div className="mct-tabs" role="tablist" aria-label="Категории услуг">
+`          <div className="mct-tabs mct-tabs-scroll" role="tablist" aria-label="Категории услуг">
             <button className={\`mct-tab\${category === "manicure" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "manicure"} onClick={() => switchCategory("manicure")}>Маникюр</button>
             <button className={\`mct-tab\${category === "pedicure" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "pedicure"} onClick={() => switchCategory("pedicure")}>Педикюр</button>
             <button className={\`mct-tab\${category === "podology" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "podology"} onClick={() => switchCategory("podology")}>Подология</button>
             <button className={\`mct-tab\${category === "training" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "training"} onClick={() => switchCategory("training")}>Обучение</button>
           </div>`,
-  "four service tabs",
+  "four horizontal service tabs",
 );
 
 replaceRequired(
@@ -75,7 +75,7 @@ replaceBetween(
         <div className="mct-shell mct-reveal">
           <div className="mct-section-head">
             <div><p className="mct-section-kicker">Портфолио</p><h2>Работы</h2></div>
-            <p className="mct-section-note">Подборка маникюра, педикюра и дизайнов Тахмины</p>
+            <p className="mct-section-note">Подборка работ Тахмины</p>
           </div>
         </div>
 `,
@@ -92,52 +92,59 @@ replaceBetween(
 );
 
 replaceRequired(
-  '<a href="#mobile-promotions" onClick={() => setMenuOpen(false)}><span>•</span>Акции</a>',
-  '<a href="#mobile-promotions" onClick={() => setMenuOpen(false)}><span>•</span>Обучение</a>',
-  "mobile menu training label",
+  '                  <a href="#mobile-promotions" onClick={() => setMenuOpen(false)}><span>•</span>Акции</a>\n',
+  '',
+  "remove mobile promotions link",
 );
 replaceRequired(
-  '<a href="#mobile-promotions">Акции</a>',
-  '<a href="#mobile-promotions">Обучение</a>',
-  "desktop menu training label",
+  '              <a href="#mobile-promotions">Акции</a>\n',
+  '',
+  "remove desktop promotions link",
 );
 
-const trainingSectionStart = '      <section className="mct-promotions mct-reveal" id="mobile-promotions" ref={promotionSectionRef}>';
+const promotionSectionStart = '      <section className="mct-promotions mct-reveal" id="mobile-promotions" ref={promotionSectionRef}>';
 const aboutSection = '      <section className="mct-about mct-reveal" id="mobile-about">';
 replaceBetween(
-  trainingSectionStart,
+  promotionSectionStart,
   aboutSection,
-`      <section className="mct-promotions mct-reveal" id="mobile-promotions">
-        <div className="mct-shell">
-          <div className="mct-promotions-head">
-            <div><p className="mct-section-kicker">Обучение мастеров</p><h2>Индивидуальные<br />занятия</h2></div>
-            <a href={bookingUrl} target="_blank" rel="noopener noreferrer">Смотреть обучение →</a>
-          </div>
-          <div className="mct-promotion-list mct-training-list" aria-label="Индивидуальное обучение у Тахмины">
-            {promotions.map((promotion) => (
-              <article className="mct-promotion-card" key={promotion.title}>
-                <figure><img src={promotion.image} alt={promotion.alt} loading="lazy" draggable="false" /></figure>
-                <div className="mct-promotion-copy">
-                  <span>{promotion.period}</span>
-                  <h3>{promotion.title}</h3>
-                  <strong className="mct-promotion-benefit">{promotion.highlight}</strong>
-                  <p>{promotion.description}</p>
-                  <a href={bookingUrl} target="_blank" rel="noopener noreferrer">Посмотреть программу →</a>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-`,
-  "replace promotions with training",
+  '',
+  "remove promotions/training block",
 );
 
 replaceRequired(
-  '              onMouseLeave={resumeDesktopGallery}',
-  '              onMouseLeave={() => { if (desktopGalleryPointerStartRef.current === null) resumeDesktopGallery(); }}',
-  "desktop gallery mouse leave",
+`              onPointerDown={(event) => {
+                if (!event.isPrimary) return;
+                pauseDesktopGallery(event.clientX);
+                if (event.pointerType === "mouse" && !event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.setPointerCapture(event.pointerId);
+              }}
+              onPointerMove={(event) => {
+                if (!event.isPrimary || desktopGalleryPointerStartRef.current === null) return;
+                moveDesktopGallery(event.clientX);
+              }}
+              onPointerUp={(event) => {
+                if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+                resumeDesktopGallery();
+              }}
+              onPointerCancel={resumeDesktopGallery}`,
+`              onPointerDown={(event) => {
+                if (!event.isPrimary) return;
+                if (event.pointerType === "mouse") event.preventDefault();
+                pauseDesktopGallery(event.clientX);
+                if (!event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.setPointerCapture(event.pointerId);
+              }}
+              onPointerMove={(event) => {
+                if (!event.isPrimary || desktopGalleryPointerStartRef.current === null) return;
+                if (event.pointerType === "mouse") event.preventDefault();
+                moveDesktopGallery(event.clientX);
+              }}
+              onPointerUp={(event) => {
+                if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+                resumeDesktopGallery();
+              }}
+              onPointerCancel={resumeDesktopGallery}
+              onLostPointerCapture={resumeDesktopGallery}
+              onDragStart={(event) => event.preventDefault()}`,
+  "desktop gallery pointer handling",
 );
 
 source = source.replaceAll('aria-label="Бесконечная галерея работ Нонны"', 'aria-label="Бесконечная галерея работ Тахмины"');
@@ -145,14 +152,37 @@ source = source.replaceAll('aria-label="Бесконечная галерея р
 css += `
 
 /* Tahmina-specific refinements */
+.mct-tabs-scroll {
+  display: flex !important;
+  grid-template-columns: none !important;
+  gap: 6px !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px !important;
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mct-tabs-scroll::-webkit-scrollbar { display: none; }
+
+.mct-tabs-scroll .mct-tab {
+  flex: 0 0 auto;
+  min-width: max-content;
+  padding-inline: 18px;
+  white-space: nowrap;
+}
+
+.mct-brand,
+.mct-intro-mark span,
+.dct-footer > a {
+  letter-spacing: .015em !important;
+}
+
 @media (max-width: 767px) {
   .mct-amenities-grid article:nth-child(2) strong {
     white-space: nowrap;
     font-size: 16px;
-  }
-
-  .mct-training-list {
-    grid-auto-columns: min(88vw, 430px);
   }
 }
 
@@ -161,12 +191,15 @@ css += `
     cursor: grab;
     user-select: none;
     -webkit-user-select: none;
+    touch-action: pan-y;
   }
 
-  .dct-gallery-viewport:active {
-    cursor: grabbing;
-  }
+  .dct-gallery-viewport:active { cursor: grabbing; }
 
+  .dct-gallery-viewport,
+  .dct-gallery-track,
+  .dct-gallery-set,
+  .dct-gallery-module,
   .dct-film-frame,
   .dct-film-frame img {
     user-select: none;
@@ -176,10 +209,6 @@ css += `
 
   .dct-film-frame img {
     pointer-events: none;
-  }
-
-  .mct-training-list {
-    grid-auto-columns: min(620px, 62vw);
   }
 }
 `;

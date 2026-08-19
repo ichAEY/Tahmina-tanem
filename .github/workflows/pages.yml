@@ -90,6 +90,7 @@ jobs:
             ['/claytone-enhancements.js', `${prefix}/claytone-enhancements.js`],
             ['/android-scroll-fix.js', `${prefix}/android-scroll-fix.js`],
             ['/favicon.svg', `${prefix}/favicon.svg`],
+            ['/noop.js', `${prefix}/noop.js`],
           ];
           function walk(dir) {
             for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

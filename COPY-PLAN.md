@@ -1,1 +1,0 @@
-Copying the stable Nonna TANEM visual template into this repository. Customer-specific content will remain isolated in site-data.mjs; Tahmina's uploaded images remain under tahmina/assets/images.

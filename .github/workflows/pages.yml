@@ -60,6 +60,10 @@ jobs:
         working-directory: template
         run: node ../customer/patch-tahmina.mjs
 
+      - name: Apply final mobile polish
+        working-directory: template
+        run: node ../customer/final-refinements.mjs
+
       - name: Configure project Pages base path
         working-directory: template
         run: |

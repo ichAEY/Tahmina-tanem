@@ -19,7 +19,7 @@ replaceRequired(
             <button className={\`mct-tab\${category === "training" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "training"} onClick={() => switchCategory("training")}>Обучение</button>
           </div>`,
 `          <div className="mct-tabs mct-tabs-scroll" role="tablist" aria-label="Категории услуг">
-            <div className="mct-tabs-track">
+            <div className="mct-tabs-track" role="presentation">
               <button className={\`mct-tab\${category === "manicure" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "manicure"} onClick={() => switchCategory("manicure")}>Маникюр</button>
               <button className={\`mct-tab\${category === "pedicure" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "pedicure"} onClick={() => switchCategory("pedicure")}>Педикюр</button>
               <button className={\`mct-tab\${category === "podology" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "podology"} onClick={() => switchCategory("podology")}>Подология</button>
@@ -35,18 +35,18 @@ replaceRequired(
   "personal amenities heading",
 );
 
+source = source.replaceAll("A. S. NAILS", "A.S. NAILS");
+
 css += `
 
 /* Final Tahmina mobile polish */
-@media (max-width: 767px) {
-  /* Compact A.S. NAILS wordmark without changing the brand itself. */
-  .mct-brand,
-  .mct-intro-mark span,
-  .dct-footer > a {
-    letter-spacing: 0 !important;
-    word-spacing: -.1em !important;
-  }
+.mct-brand,
+.mct-intro-mark span,
+.dct-footer > a {
+  letter-spacing: .0075em !important;
+}
 
+@media (max-width: 767px) {
   /* Make the category control feel like one continuous ribbon that extends off-screen. */
   .mct-tabs-scroll {
     display: block !important;

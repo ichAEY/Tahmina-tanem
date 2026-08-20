@@ -68,7 +68,7 @@ jobs:
         working-directory: template
         run: node ../customer/last-services-polish.mjs
 
-      - name: Configure project Pages base path
+      - name: Configure Pages for custom domain root
         working-directory: template
         run: |
           cat > next.config.ts <<'EOF'
@@ -78,44 +78,10 @@ jobs:
             output: "export",
             trailingSlash: true,
             images: { unoptimized: true },
-            basePath: "/Tahmina-tanem",
           };
 
           export default nextConfig;
           EOF
-
-      - name: Prefix public asset URLs for GitHub Pages
-        working-directory: template
-        run: |
-          node - <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
-          const roots = ['app', 'public'];
-          const allowed = new Set(['.tsx', '.ts', '.js', '.mjs', '.css', '.html']);
-          const prefix = '/Tahmina-tanem';
-          const replacements = [
-            ['/assets/', `${prefix}/assets/`],
-            ['/claytone-enhancements.js', `${prefix}/claytone-enhancements.js`],
-            ['/android-scroll-fix.js', `${prefix}/android-scroll-fix.js`],
-            ['/favicon.svg', `${prefix}/favicon.svg`],
-            ['/noop.js', `${prefix}/noop.js`],
-          ];
-          function walk(dir) {
-            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-              const full = path.join(dir, entry.name);
-              if (entry.isDirectory()) walk(full);
-              else if (allowed.has(path.extname(entry.name))) {
-                let text = fs.readFileSync(full, 'utf8');
-                const before = text;
-                for (const [from, to] of replacements) {
-                  text = text.split(from).join(to);
-                }
-                if (text !== before) fs.writeFileSync(full, text);
-              }
-            }
-          }
-          for (const root of roots) if (fs.existsSync(root)) walk(root);
-          NODE
 
       - name: Remove old exported Next assets
         working-directory: template

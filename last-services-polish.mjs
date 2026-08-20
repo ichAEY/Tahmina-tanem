@@ -34,6 +34,9 @@ if (!source.includes(ribbonMarkup)) {
 source = source.replace(
   ribbonMarkup,
 `          <div className="mct-tabs-ribbon-wrap">
+            <span className="mct-tabs-swipe-cue" aria-hidden="true">
+              <svg viewBox="0 0 18 10" fill="none"><path d="M1 5h14M11 1.5 15 5l-4 3.5" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </span>
             <div className="mct-tabs mct-tabs-scroll" role="tablist" aria-label="Категории услуг">
               <div className="mct-tabs-track" role="presentation">
                 <button className={\`mct-tab mct-tab-all\${category === "all" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "all"} onClick={() => switchCategory("all")}>Все</button>
@@ -44,20 +47,21 @@ source = source.replace(
                 <button className={\`mct-tab\${category === "training" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "training"} onClick={() => switchCategory("training")}>Обучение</button>
               </div>
             </div>
-            <span className="mct-tabs-swipe-cue" aria-hidden="true">›</span>
           </div>`,
 );
 
 css += `
 
-/* Last services polish: clearer groups, symmetric mobile ribbon and subtle swipe cue */
+/* Last services polish: clearer groups, clean mobile ribbon cue and tactile controls */
 @media (max-width: 767px) {
   .mct-tabs-ribbon-wrap {
     position: relative;
+    padding-top: 15px;
   }
 
   .mct-tabs-scroll {
     --mct-ribbon-edge: max(var(--mct-shell-pad), calc((100vw - 520px) / 2 + var(--mct-shell-pad)));
+    margin-top: 0 !important;
     padding-left: var(--mct-ribbon-edge) !important;
     padding-right: 0 !important;
     scroll-padding-left: var(--mct-ribbon-edge) !important;
@@ -68,32 +72,30 @@ css += `
     margin-right: var(--mct-ribbon-edge);
   }
 
+  /* One small hint above the ribbon, aligned to the right content edge. */
   .mct-tabs-swipe-cue {
     position: absolute;
     z-index: 3;
-    top: 50%;
-    right: -3px;
-    display: flex;
-    width: 38px;
-    height: 44px;
-    align-items: center;
-    justify-content: flex-end;
-    padding-right: 2px;
-    background: linear-gradient(90deg, rgba(247, 241, 235, 0), rgba(247, 241, 235, .88) 58%, #f7f1eb 100%);
-    color: rgba(77, 65, 59, .62);
-    font: 500 25px/1 "Cormorant Garamond", Georgia, serif;
+    top: 1px;
+    right: 2px;
+    display: block;
+    width: 18px;
+    height: 10px;
+    color: rgba(80, 67, 61, .58);
     pointer-events: none;
-    transform: translateY(-50%);
-    animation: mctSwipeCue 1.8s ease-in-out infinite;
+    animation: mctSwipeCue 1.65s cubic-bezier(.45, 0, .25, 1) infinite;
+  }
+
+  .mct-tabs-swipe-cue svg {
+    display: block;
+    width: 18px;
+    height: 10px;
   }
 
   @keyframes mctSwipeCue {
-    0%, 100% { opacity: .58; transform: translate3d(0, -50%, 0); }
-    50% { opacity: .92; transform: translate3d(3px, -50%, 0); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .mct-tabs-swipe-cue { animation: none; }
+    0%, 26%, 100% { transform: translate3d(0, 0, 0); }
+    52% { transform: translate3d(4px, 0, 0); }
+    72% { transform: translate3d(1px, 0, 0); }
   }
 
   .mct-service-group-label {
@@ -107,6 +109,54 @@ css += `
 
   .mct-service-group-label::after {
     background: rgba(65, 52, 47, .2);
+  }
+
+  /* Tactile press feedback for the main mobile actions. */
+  .mct-main-cta,
+  .mct-gallery-button,
+  .mct-final-cta,
+  .mct-final-secondary,
+  .mct-sticky {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transform: translate3d(0, 0, 0) scale(1);
+    transition: transform 115ms cubic-bezier(.2, .72, .28, 1), filter 115ms ease, box-shadow 115ms ease;
+    will-change: transform;
+  }
+
+  .mct-main-cta:active,
+  .mct-gallery-button:active,
+  .mct-final-cta:active,
+  .mct-final-secondary:active,
+  .mct-sticky:active {
+    transform: translate3d(0, 1px, 0) scale(.985);
+    filter: brightness(.985);
+  }
+
+  .mct-gallery-button:active,
+  .mct-final-secondary:active {
+    box-shadow: inset 0 1px 3px rgba(65, 52, 47, .08);
+  }
+
+  .mct-tabs-scroll .mct-tab {
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 105ms cubic-bezier(.2, .72, .28, 1), background-color 150ms ease, color 150ms ease;
+    transform: translate3d(0, 0, 0) scale(1);
+    will-change: transform;
+  }
+
+  .mct-tabs-scroll .mct-tab:active {
+    transform: translate3d(0, 1px, 0) scale(.965);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mct-tabs-swipe-cue { animation: none; }
+    .mct-main-cta,
+    .mct-gallery-button,
+    .mct-final-cta,
+    .mct-final-secondary,
+    .mct-sticky,
+    .mct-tabs-scroll .mct-tab { transition: none; }
   }
 }
 

@@ -64,6 +64,10 @@ jobs:
         working-directory: template
         run: node ../customer/final-refinements.mjs
 
+      - name: Apply last services polish
+        working-directory: template
+        run: node ../customer/last-services-polish.mjs
+
       - name: Configure project Pages base path
         working-directory: template
         run: |

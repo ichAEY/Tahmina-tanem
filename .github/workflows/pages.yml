@@ -2,7 +2,7 @@ name: Deploy Tahmina TANEM site
 
 on:
   push:
-    branches: [main]
+    branches: [main, final-mobile-polish]
   workflow_dispatch:
 
 permissions:

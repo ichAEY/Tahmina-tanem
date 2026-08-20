@@ -47,6 +47,57 @@ replaceRequired(
 );
 
 replaceRequired(
+`  const switchCategory = (next: "manicure" | "pedicure" | "podology" | "training") => {
+    setCategory(next);
+    setExpanded(false);
+  };`,
+`  const switchCategory = (next: "manicure" | "pedicure" | "podology" | "training") => {
+    setCategory(next);
+    setExpanded(false);
+  };
+
+  useEffect(() => {
+    if (!window.matchMedia("(max-width: 767px)").matches || !("IntersectionObserver" in window)) return;
+    const tabs = document.querySelector<HTMLElement>(".mct-tabs-scroll");
+    if (!tabs) return;
+
+    let nudgeTimer = 0;
+    let returnTimer = 0;
+    let cancelled = false;
+
+    const cancelHint = () => {
+      cancelled = true;
+      window.clearTimeout(nudgeTimer);
+      window.clearTimeout(returnTimer);
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      observer.disconnect();
+      if (tabs.scrollWidth <= tabs.clientWidth + 8) return;
+
+      nudgeTimer = window.setTimeout(() => {
+        if (cancelled) return;
+        tabs.scrollTo({ left: Math.min(54, tabs.scrollWidth - tabs.clientWidth), behavior: "smooth" });
+        returnTimer = window.setTimeout(() => {
+          if (!cancelled) tabs.scrollTo({ left: 0, behavior: "smooth" });
+        }, 620);
+      }, 280);
+    }, { threshold: 0.6 });
+
+    observer.observe(tabs);
+    tabs.addEventListener("pointerdown", cancelHint, { once: true });
+
+    return () => {
+      observer.disconnect();
+      cancelHint();
+      tabs.removeEventListener("pointerdown", cancelHint);
+    };
+  }, []);`,
+  "mobile service tabs hint",
+);
+
+replaceRequired(
 `          <div className="mct-tabs" role="tablist" aria-label="Категории услуг">
             <button className={\`mct-tab\${category === "manicure" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "manicure"} onClick={() => switchCategory("manicure")}>Маникюр</button>
             <button className={\`mct-tab\${category === "pedicure" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "pedicure"} onClick={() => switchCategory("pedicure")}>Педикюр</button>
@@ -58,6 +109,12 @@ replaceRequired(
             <button className={\`mct-tab\${category === "training" ? " is-active" : ""}\`} type="button" role="tab" aria-selected={category === "training"} onClick={() => switchCategory("training")}>Обучение</button>
           </div>`,
   "four horizontal service tabs",
+);
+
+replaceRequired(
+  'const featuredWorks = galleryWorks.slice(0, 3);',
+  'const featuredWorks = galleryWorks.slice(0, 5);',
+  "five featured mobile works",
 );
 
 replaceRequired(
@@ -109,6 +166,12 @@ replaceBetween(
   aboutSection,
   '',
   "remove promotions/training block",
+);
+
+replaceRequired(
+  '<div className="mct-amenities-head"><p className="mct-section-kicker">Удобства для визита</p><span>Всё необходимое для спокойного посещения</span></div>',
+  '<div className="mct-amenities-head"><p className="mct-section-kicker">Почему выбирают Тахмину</p><span>Не только маникюр и педикюр</span></div>',
+  "reframe amenities block",
 );
 
 replaceRequired(
@@ -179,6 +242,18 @@ css += `
   white-space: nowrap;
 }
 
+.mct-service-name strong {
+  white-space: pre-line !important;
+}
+
+.mct-about-experience strong {
+  font-family: "Manrope", Arial, sans-serif !important;
+  font-size: 26px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  letter-spacing: -.045em !important;
+}
+
 .mct-brand,
 .mct-intro-mark span,
 .dct-footer > a {
@@ -186,6 +261,57 @@ css += `
 }
 
 @media (max-width: 767px) {
+  .mct-tabs-scroll {
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: 4px;
+  }
+
+  .mct-tabs-scroll .mct-tab {
+    flex: 0 0 112px !important;
+    min-width: 112px !important;
+    padding-inline: 12px !important;
+    scroll-snap-align: start;
+  }
+
+  .mct-work-grid {
+    grid-template-columns: 1.15fr .85fr !important;
+    grid-template-rows: 138px 154px auto !important;
+  }
+
+  .mct-work-tile:nth-child(4),
+  .mct-work-tile:nth-child(5) {
+    grid-row: 3 !important;
+    aspect-ratio: 1 / 1;
+    min-height: 0;
+  }
+
+  .mct-work-tile:nth-child(4) { grid-column: 1 !important; }
+  .mct-work-tile:nth-child(5) { grid-column: 2 !important; }
+
+  .mct-work-tile:nth-child(4) img,
+  .mct-work-tile:nth-child(5) img {
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  .mct-about-copy > .mct-about-lead {
+    color: #252220 !important;
+    font-size: 21px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+  }
+
+  .mct-about-copy > p:not(.mct-about-lead) {
+    color: #3b3734 !important;
+    font-size: 14.2px !important;
+    line-height: 1.58 !important;
+  }
+
+  .mct-amenities-head .mct-section-kicker {
+    max-width: 160px;
+    line-height: 1.3;
+  }
+
   .mct-amenities-grid article:nth-child(2) strong {
     white-space: nowrap;
     font-size: 16px;
@@ -193,6 +319,20 @@ css += `
 }
 
 @media (min-width: 768px) {
+  .mct-tabs-scroll {
+    width: 100% !important;
+    overflow: hidden !important;
+    gap: 4px !important;
+  }
+
+  .mct-tabs-scroll .mct-tab {
+    flex: 1 1 25% !important;
+    width: 25% !important;
+    min-width: 0 !important;
+    padding-inline: 10px !important;
+    text-align: center;
+  }
+
   .dct-gallery-viewport {
     cursor: grab;
     user-select: none;
